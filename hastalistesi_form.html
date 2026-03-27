@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RHEUM-ADMIT — Hasta Kayıt Sistemi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2336;
+    --border: #2a3050;
+    --accent: #4f8ef7;
+    --accent2: #7c6af7;
+    --danger: #f74f4f;
+    --warn: #f7a74f;
+    --success: #4ff79e;
+    --text: #e8ecf5;
+    --text2: #8892b0;
+    --text3: #4a5568;
+    --red-zone: rgba(247,79,79,0.08);
+    --orange-zone: rgba(247,167,79,0.08);
+    --yellow-zone: rgba(247,220,79,0.08);
+    --blue-zone: rgba(79,142,247,0.08);
+    --purple-zone: rgba(124,106,247,0.08);
+    --gray-zone: rgba(136,146,176,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1520 0%, #131929 60%, #0f1825 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 22px;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--text2); font-size: 0.82rem; margin-top: 3px; font-family: 'DM Mono', monospace; }
+
+  .auth-bar {
+    display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap;
+  }
+  #auth-btn {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 20px; font-size: 0.85rem; font-family: 'Outfit', sans-serif;
+    font-weight: 600; cursor: pointer; transition: opacity .2s;
+  }
+  #auth-btn:hover { opacity: .85; }
+  #auth-status {
+    font-size: 0.8rem; color: var(--text2); font-family: 'DM Mono', monospace;
+  }
+  #auth-status.ok { color: var(--success); }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 36px 24px; }
+
+  /* ── SECTION BLOCKS ── */
+  .block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .block-header {
+    padding: 16px 24px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .block-header h2 {
+    font-size: 0.95rem; font-weight: 600; letter-spacing: .3px;
+  }
+  .block-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem; padding: 2px 8px;
+    border-radius: 20px; background: var(--surface2);
+    color: var(--text2); border: 1px solid var(--border);
+  }
+  .block-body { padding: 22px 24px; }
+
+  /* ── GRID ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+  @media(max-width:640px) {
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    header { padding: 16px 16px 14px; }
+    .container { padding: 20px 12px; }
+    .block-body { padding: 16px 14px; }
+  }
+
+  /* ── FORM CONTROLS ── */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 0.78rem; font-weight: 500; color: var(--text2); letter-spacing: .5px; text-transform: uppercase; }
+
+  input[type=text], input[type=number], input[type=date], input[type=tel], select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.93rem;
+    padding: 10px 14px;
+    border-radius: 9px;
+    outline: none;
+    width: 100%;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,142,247,.12);
+  }
+
+  /* ── PHONE FIELD ── */
+  .phone-wrap {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .phone-wrap input { flex: 1; }
+  .phone-add-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--accent); width: 36px; height: 36px; border-radius: 8px;
+    font-size: 1.3rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+  }
+  .phone-add-btn:hover { background: rgba(79,142,247,.15); }
+  .companion-row { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+  .companion-row input { flex: 1; }
+  .companion-row .del-btn {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--danger); width: 32px; height: 32px; border-radius: 7px;
+    cursor: pointer; font-size: 1rem; display:flex; align-items:center; justify-content:center;
+  }
+  .phones-container { display: flex; flex-direction: column; gap: 6px; }
+
+  /* ── RADIO / CHECKBOX GROUPS ── */
+  .radio-group, .check-group {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .radio-row, .check-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 14px; cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .radio-row:hover, .check-row:hover { border-color: var(--accent); }
+  .radio-row.selected, .check-row.selected {
+    border-color: var(--accent); background: rgba(79,142,247,.1);
+  }
+  .radio-row input, .check-row input { display: none; }
+  .radio-label { font-size: 0.9rem; }
+  .radio-score {
+    margin-left: auto; font-family: 'DM Mono', monospace;
+    font-size: 0.75rem; color: var(--text2);
+  }
+
+  /* ── PURPOSE TABS ── */
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab {
+    padding: 9px 18px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--surface2); font-size: 0.88rem; font-weight: 500;
+    cursor: pointer; transition: all .2s; color: var(--text2);
+  }
+  .tab:hover { border-color: var(--accent); color: var(--text); }
+  .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ── SCORING SECTIONS ── */
+  .score-section {
+    border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; overflow: hidden;
+  }
+  .score-header {
+    padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+    font-size: 0.88rem; font-weight: 600;
+  }
+  .score-body { padding: 12px 18px; }
+  .score-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Zone colours */
+  .zone-red { background: var(--red-zone); }
+  .zone-red .score-header { background: rgba(247,79,79,.14); }
+  .zone-orange { background: var(--orange-zone); }
+  .zone-orange .score-header { background: rgba(247,167,79,.14); }
+  .zone-yellow { background: var(--yellow-zone); }
+  .zone-yellow .score-header { background: rgba(247,220,79,.14); }
+  .zone-blue { background: var(--blue-zone); }
+  .zone-blue .score-header { background: rgba(79,142,247,.14); }
+  .zone-purple { background: var(--purple-zone); }
+  .zone-purple .score-header { background: rgba(124,106,247,.14); }
+  .zone-gray { background: var(--gray-zone); }
+  .zone-gray .score-header { background: rgba(136,146,176,.1); }
+
+  /* ── CHECK ROWS for multi-select ── */
+  .check-table { display: flex; flex-direction: column; gap: 5px; }
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.03); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .check-item:hover { border-color: var(--accent); }
+  .check-item.checked { border-color: var(--accent); background: rgba(79,142,247,.09); }
+  .check-item input { width:16px; height:16px; accent-color: var(--accent); }
+  .check-item-label { font-size: 0.88rem; flex:1; }
+  .check-item-score { font-family: 'DM Mono', monospace; font-size:0.75rem; color: var(--text2); }
+
+  /* ── ORGAN CHECKBOXES ── */
+  .organ-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; }
+
+  /* ── HIDDEN PANEL ── */
+  #tani-panel { display: none; animation: fadeSlide .3s ease; }
+  #tani-panel.visible { display: block; }
+  @keyframes fadeSlide {
+    from { opacity:0; transform: translateY(-8px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  /* ── SUBMIT BUTTON ── */
+  .submit-wrap { text-align: center; margin-top: 32px; }
+  #submit-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 12px;
+    padding: 15px 52px; font-size: 1rem; font-family: 'Outfit', sans-serif;
+    font-weight: 700; cursor: pointer; letter-spacing: .3px;
+    box-shadow: 0 4px 24px rgba(79,142,247,.3);
+    transition: opacity .2s, transform .15s;
+  }
+  #submit-btn:hover { opacity:.9; transform: translateY(-1px); }
+  #submit-btn:active { transform: translateY(0); }
+  #submit-btn:disabled { opacity:.45; cursor: not-allowed; transform: none; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 14px 28px; border-radius: 12px;
+    font-size: 0.9rem; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 200;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+  #toast.success { border-color: var(--success); color: var(--success); }
+  #toast.error { border-color: var(--danger); color: var(--danger); }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
+</head>
+<body>
+
+<header>
+  <h1>🏥 RHEUM-<span>ADMIT</span></h1>
+  <p>Romatoloji Hasta Kayıt & Skoring Sistemi · v4.0</p>
+
+</header>
+
+<div class="container">
+
+  <!-- ═══ HASTA BİLGİLERİ ═══ -->
+  <div class="block">
+    <div class="block-header">
+      <h2>👤 Hasta Bilgileri</h2>
+      <span class="block-badge">TEMEL</span>
+    </div>
+    <div class="block-body">
+      <div class="grid2" style="margin-bottom:18px">
+        <div class="field">
+          <label>Hasta Adı Soyadı</label>
+          <input type="text" id="hasta-adi" placeholder="Ad Soyad">
+        </div>
+        <div class="field">
+          <label>TC Kimlik No</label>
+          <input type="text" id="tc-kimlik" placeholder="11 haneli TC" maxlength="11" inputmode="numeric">
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="field">
+          <label>Yaş</label>
+          <input type="number" id="hasta-yasi" placeholder="Yaş" min="0" max="130">
+        </div>
+        <div class="field">
+          <label>Cinsiyet</label>
+          <select id="cinsiyet">
+            <option value="">Seçiniz</option>
+            <option value="Kadın">Kadın</option>
+            <option value="Erkek">Erkek</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Listeye Alınış Tarihi</label>
+          <input type="date" id="liste-tarihi">
+        </div>
+      </div>
+      <div class="grid2" style="margin-bottom:18px">
+        <div class="field">
+          <label>Listeleyen Doktor (Baş Harfler)</label>
+          <input type="text" id="doktor-harfleri" placeholder="ör. A.K." maxlength="10" style="text-transform:uppercase">
+        </div>
+        <div class="field">
+          <label style="color:#8892b0">Planlanan Yatış Tarihi <span style="font-weight:400;font-size:0.75rem">(opsiyonel — ileri tarih)</span></label>
+          <input type="date" id="planlanan-tarih" style="opacity:0.7">
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- Romatolojik Tanı -->
+      <div class="field" style="margin-bottom:14px">
+        <label>Romatolojik Hastalık Tanısı</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label class="check-item" id="romato-tani-item" onclick="toggleRomatoTani(this)" style="flex:none;min-width:120px">
+            <input type="checkbox" id="romato-tani-cb">
+            <span class="check-item-label">Var</span>
+          </label>
+          <input type="text" id="romato-tani-text" placeholder="Tanıyı giriniz..." disabled style="flex:1;min-width:200px;opacity:0.4;pointer-events:none">
+        </div>
+      </div>
+
+      <!-- Kısa Hikaye -->
+      <div class="field" style="margin-bottom:14px">
+        <label>Kısa Hikaye <span style="font-weight:400;color:var(--text2)">(opsiyonel)</span></label>
+        <textarea id="kisa-hikaye" rows="3" placeholder="Hastanın kısa hikayesi..." style="resize:vertical"></textarea>
+      </div>
+
+      <!-- Kullandığı İlaçlar -->
+      <div class="field" style="margin-bottom:14px">
+        <label>Kullandığı İlaçlar <span style="font-weight:400;color:var(--text2)">(opsiyonel)</span></label>
+        <input type="text" id="kullandigi-ilaclar" placeholder="ör. Metotreksat, Prednizolon...">
+      </div>
+
+      <hr class="divider">
+
+      <!-- Telefon + Yanındaki -->
+      <div class="field">
+        <label>Telefon Numarası & Yanındaki Kişi</label>
+        <div id="phones-container" class="phones-container">
+          <div class="phone-row" data-index="0">
+            <div class="phone-wrap">
+              <input type="tel" class="tel-input" placeholder="+90 5XX XXX XX XX">
+              <button class="phone-add-btn" onclick="addPhone(this)" title="Kişi ekle">＋</button>
+            </div>
+            <div class="companion-row">
+              <input type="text" class="companion-input" placeholder="Yanındaki kişi (ör. Eşi, Oğlu)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ YATIŞ AMACI ═══ -->
+  <div class="block">
+    <div class="block-header">
+      <h2>🎯 Yatış Amacı</h2>
+    </div>
+    <div class="block-body">
+      <div class="tabs">
+        <button class="tab" onclick="selectPurpose('tani-tedavi', this)">Tanı / Tedavi</button>
+        <button class="tab" onclick="selectPurpose('ilac-egitim', this)">İlaç Eğitimi</button>
+        <button class="tab" onclick="selectPurpose('ilac-uygulama', this)">İlaç Uygulaması</button>
+        <button class="tab" onclick="selectPurpose('tukuruk-biyopsi', this)">Tükürük Bezi Biyopsisi</button>
+      </div>
+      <input type="hidden" id="yatis-amaci" value="">
+
+      <!-- TANI/TEDAVİ PANELİ -->
+      <div id="tani-panel">
+
+        <!-- H: DEVİR HASTASI -->
+        <div style="margin-bottom:14px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label class="check-item" id="devir-item" onclick="toggleDevir(this)" style="border-color:#f7a74f;background:rgba(247,167,79,0.06);flex:none">
+              <input type="checkbox" id="devir-checkbox" value="1">
+              <span class="check-item-label" style="font-weight:600;color:#f7a74f">Devir Hastası</span>
+            </label>
+            <div class="field" style="flex:1;min-width:160px">
+              <label>Devir Servisi</label>
+              <input type="text" id="devir-servisi" placeholder="ör. Kardiyoloji, Nöroloji..." style="opacity:0.5;pointer-events:none" disabled>
+            </div>
+          </div>
+        </div>
+
+        <!-- A: YAŞAMSAL RİSK -->
+        <div class="score-section zone-red">
+          <div class="score-header">
+            <div class="score-dot" style="background:#f74f4f"></div>
+            A. Yaşamsal Risk
+          </div>
+          <div class="score-body">
+            <div class="check-table" id="yasam-riski-group">
+              <label class="check-item" onclick="toggleCheck(this,'yasam')">
+                <input type="checkbox" value="10"> <span class="check-item-label">Şok / hemodinamik instabilite</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'yasam')">
+                <input type="checkbox" value="9"> <span class="check-item-label">Akut solunum yetmezliği</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'yasam')">
+                <input type="checkbox" value="9"> <span class="check-item-label">Hızlı ilerleyen organ yetmezliği</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'yasam')">
+                <input type="checkbox" value="10"> <span class="check-item-label">Diffüz alveoler hemoraji</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'yasam')">
+                <input type="checkbox" value="10"> <span class="check-item-label">MAS / sitokin fırtınası</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'yasam')">
+                <input type="checkbox" value="8"> <span class="check-item-label">Ciddi nörolojik durum</span>
+              </label>
+            </div>
+            <div style="margin-top:10px;font-size:0.78rem;color:var(--text2)">⚠ En yüksek işaretlenen puan alınır (maks 10)</div>
+          </div>
+        </div>
+
+        <!-- B: ORGAN TUTULUMU -->
+        <div class="score-section zone-orange">
+          <div class="score-header">
+            <div class="score-dot" style="background:#f7a74f"></div>
+            B. Organ Tutulumu
+          </div>
+          <div class="score-body">
+            <div class="organ-grid" id="organ-group">
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Renal</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Pulmoner</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Kardiyak</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Nörolojik</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">GİS</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Kas</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'organ')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Hematolojik</span>
+              </label>
+              <label class="check-item" id="organ-diger-item" onclick="toggleOrganDiger(this)">
+                <input type="checkbox" id="organ-diger-cb" value="3">
+                <span class="check-item-label">Diğer</span>
+              </label>
+            </div>
+            <div id="organ-diger-wrap" style="display:none;margin-top:8px">
+              <input type="text" id="organ-diger-text" placeholder="Organ/sistem belirtiniz..." style="width:100%">
+            </div>
+          </div>
+        </div>
+
+        <!-- C: HASTALIK AKTİVİTESİ -->
+        <div class="score-section zone-yellow">
+          <div class="score-header">
+            <div class="score-dot" style="background:#f7dc4f"></div>
+            C. Hastalık Aktivitesi
+          </div>
+          <div class="score-body">
+            <div class="check-table" id="aktivite-group" data-single="true">
+              <label class="check-item" onclick="toggleCheck(this,'aktivite')">
+                <input type="radio" name="aktivite" value="6"> <span class="check-item-label">Çok yüksek aktivite</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'aktivite')">
+                <input type="radio" name="aktivite" value="4"> <span class="check-item-label">Orta aktivite</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'aktivite')">
+                <input type="radio" name="aktivite" value="2"> <span class="check-item-label">Hafif aktivite</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- D: TEDAVİ / ETYOLOJİ -->
+        <div class="score-section zone-blue">
+          <div class="score-header">
+            <div class="score-dot" style="background:#4f8ef7"></div>
+            D. Tedavi / Etyoloji
+          </div>
+          <div class="score-body">
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;font-weight:600">D1. Tedavi İhtiyacı</div>
+            <div class="check-table" id="tedavi-group" style="margin-bottom:14px">
+              <label class="check-item" onclick="toggleCheck(this,'tedavi')">
+                <input type="checkbox" value="1"> <span class="check-item-label">Oral steroid / DMARD / immunosüpresan</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'tedavi')">
+                <input type="checkbox" value="2"> <span class="check-item-label">Pulse steroid</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'tedavi')">
+                <input type="checkbox" value="2"> <span class="check-item-label">Biyolojik / siklofosfamid</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'tedavi')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Plazmaferez / IVIG</span>
+              </label>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;font-weight:600">D2. Etyoloji</div>
+            <div class="check-table" id="etyo-group" style="margin-bottom:14px">
+              <label class="check-item" onclick="toggleCheck(this,'etyo')">
+                <input type="checkbox" value="5"> <span class="check-item-label">Romatolojik etyoloji net / çok olası</span>
+              </label>
+            </div>
+            <div>
+              <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;font-weight:600">🧪 D3. Tarama</div>
+              <div class="check-table" id="tarama-group">
+                <label class="check-item" onclick="toggleCheck(this,'tarama')">
+                  <input type="checkbox" value="1"> <span class="check-item-label">Açıklanamayan akut faz yüksekliği</span>
+                </label>
+                <label class="check-item" onclick="toggleCheck(this,'tarama')">
+                  <input type="checkbox" value="1"> <span class="check-item-label">Malignite tarama ihtiyacı</span>
+                </label>
+                <label class="check-item" onclick="toggleCheck(this,'tarama')">
+                  <input type="checkbox" value="1"> <span class="check-item-label">Diğer tarama</span>
+                </label>
+              </div>
+              <div id="diger-tarama-wrap" style="margin-top:8px;display:none">
+                <input type="text" id="diger-tarama-text" placeholder="Ne taranacağını yazınız..." style="width:100%">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- E: KOMORBİDİTE -->
+        <div class="score-section zone-purple">
+          <div class="score-header">
+            <div class="score-dot" style="background:#7c6af7"></div>
+            E. Komorbidite (Charlson-benzeri)
+          </div>
+          <div class="score-body">
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;font-weight:500">Hafif komorbidite · (sadece biri seçilebilir)</div>
+            <div class="check-table" id="komor1-group" style="margin-bottom:10px" data-single="true">
+              <label class="check-item" onclick="toggleCheck(this,'komor1')">
+                <input type="radio" name="komor1" value="1"> <span class="check-item-label">HT, DM (komplike değil), KAH, KOAH (hafif), KBH evre 3</span>
+              </label>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;font-weight:500">Orta komorbidite · (sadece biri seçilebilir)</div>
+            <div class="check-table" id="komor2-group" style="margin-bottom:10px" data-single="true">
+              <label class="check-item" onclick="toggleCheck(this,'komor2')">
+                <input type="radio" name="komor2" value="2"> <span class="check-item-label">DM komplikasyonlu, KY, KOAH ağır, KBH ≥4, siroz</span>
+              </label>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text2);margin-bottom:6px;font-weight:500">Ağır komorbidite · (sadece biri seçilebilir)</div>
+            <div class="check-table" id="komor3-group" data-single="true">
+              <label class="check-item" onclick="toggleCheck(this,'komor3')">
+                <input type="radio" name="komor3" value="3"> <span class="check-item-label">Aktif malignite, metastaz, ileri organ yetmezliği</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- F: YAŞ -->
+        <div class="score-section zone-gray">
+          <div class="score-header">
+            <div class="score-dot" style="background:#888"></div>
+            F. Yaş
+          </div>
+          <div class="score-body">
+            <div class="check-table" id="yas-group" data-single="true">
+              <label class="check-item" onclick="toggleCheck(this,'yas')">
+                <input type="radio" name="yas" value="3"> <span class="check-item-label">≥ 75 yaş</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'yas')">
+                <input type="radio" name="yas" value="2"> <span class="check-item-label">65–74 yaş</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- G: FRAILTY/SOSYAL -->
+        <div class="score-section zone-gray">
+          <div class="score-header">
+            <div class="score-dot" style="background:#aaa"></div>
+            G. Frailty / Sosyal
+          </div>
+          <div class="score-body">
+            <div class="check-table" id="frailty-group">
+              <label class="check-item" onclick="toggleCheck(this,'frailty')">
+                <input type="checkbox" value="2"> <span class="check-item-label">Frailty</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'frailty')">
+                <input type="checkbox" value="1"> <span class="check-item-label">Ev desteği yok</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'frailty')">
+                <input type="checkbox" value="1"> <span class="check-item-label">Uyum kötü</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'frailty')">
+                <input type="checkbox" value="1"> <span class="check-item-label">Şehir dışı</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this,'frailty')">
+                <input type="checkbox" value="3"> <span class="check-item-label">Doktor yakını</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /tani-panel -->
+    </div>
+  </div>
+
+  <!-- TÜKÜRÜK BEZİ BİYOPSİSİ PANELİ (görsel) -->
+  <div id="tukuruk-panel" style="display:none;margin-top:12px;animation: fadeSlide .3s ease;">
+    <div class="block-body" style="background:var(--surface2,#1e2336);border-radius:10px;padding:14px;color:var(--text2,#8892b0);font-size:0.88rem">
+      Tükürük Bezi Biyopsisi için ek bilgi gerekmez.
+    </div>
+  </div>
+
+  <!-- İLAÇ EĞİTİMİ PANELİ -->
+  <div id="egitim-panel" style="display:none;margin-top:12px;animation: fadeSlide .3s ease;">
+    <div class="field" style="margin-bottom:14px">
+      <label>Eğitim Verilecek İlaç Adı</label>
+      <input type="text" id="egitim-ilac-adi" placeholder="ör. Metotreksat, Adalimumab...">
+    </div>
+  </div>
+
+  <!-- İLAÇ UYGULAMASI PANELİ -->
+  <div id="uygulama-panel" style="display:none;margin-top:12px;animation: fadeSlide .3s ease;">
+    <div class="grid2" style="margin-bottom:14px">
+      <div class="field">
+        <label>Uygulanacak İlaç Adı</label>
+        <input type="text" id="uygulama-ilac-adi" placeholder="İlaç Adı">
+      </div>
+      <div class="field">
+        <label>İlaç Dozu</label>
+        <input type="text" id="uygulama-ilac-dozu" placeholder="Doz (ör. 500mg, 1 flakon)">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Form ve Rapor Durumu</label>
+      <div class="check-table" style="flex-direction:row;gap:10px;flex-wrap:wrap">
+        <label class="check-item" id="uygulama-rapor-item" onclick="toggleCheck(this,'')" style="flex:none;min-width:120px">
+          <input type="checkbox" id="uygulama-rapor-cb">
+          <span class="check-item-label">📄 Rapor Var</span>
+        </label>
+        <label class="check-item" id="uygulama-form-item" onclick="toggleCheck(this,'')" style="flex:none;min-width:120px">
+          <input type="checkbox" id="uygulama-form-cb">
+          <span class="check-item-label">📋 Form Var</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NOTLAR ═══ -->
+  <div class="block">
+    <div class="block-header">
+      <h2>📝 Notlar / Tedavi Planı</h2>
+      <span class="block-badge">OPSİYONEL</span>
+    </div>
+    <div class="block-body">
+      <div class="field">
+        <label>Notlar / Tedavi Planı</label>
+        <textarea id="notlar" rows="4" placeholder="Notlar, tedavi planı veya özel durum giriniz..." style="resize:vertical;min-height:90px;"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap">
+    <div style="position:relative;display:inline-block">
+      <button id="submit-btn" onclick="submitForm()">📋 Excele Kaydet</button>
+      <span id="pending-badge" style="display:none;position:absolute;top:-6px;right:-6px;background:#f7a74f;color:#fff;font-size:0.65rem;font-weight:700;border-radius:10px;padding:1px 6px;pointer-events:none">0</span>
+    </div>
+    <button id="drive-reconnect-btn" onclick="reconnectDrive()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:10px;padding:10px 16px;cursor:pointer;font-size:0.85rem">☁ Drive Bağlan</button>
+  </div>
+
+</div><!-- /container -->
+
+<div id="toast"></div>
+
+<script>
+const DRIVE_CLIENT_ID = '760070734433-ho3s6vo856qf06gtfpo5d7tou5npk33l.apps.googleusercontent.com';
+const DRIVE_FOLDER_NAME = 'RheumAdmit_Hastalar';
+const DRIVE_FOLDER_ID = '1WwjCPb3GIsPmgoFWiqnuA1R6BZlp-zPS'; // Sabit klasör ID
+let driveAccessToken = null;
+let driveFolderId = null;
+
+window.onload = function() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('liste-tarihi').value = today;
+  updatePendingBadge();
+
+  // Kaynak seçim modalı — form için sadece Drive veya çevrimdışı
+  const modal = document.createElement('div');
+  modal.id = 'startup-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `
+    <div style="background:#181c27;border:1px solid #2a3050;border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center">
+      <div style="font-size:2rem;margin-bottom:10px">🏥</div>
+      <h2 style="color:#e8ecf5;font-size:1.1rem;margin-bottom:6px">Hasta Kayıt Formu</h2>
+      <p style="color:#8892b0;font-size:0.82rem;margin-bottom:22px">Drive bağlantısı kayıtları otomatik yükler</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onclick="document.getElementById('startup-modal').remove();initDriveAuth();"
+          style="background:#4f8ef7;color:#fff;border:none;border-radius:10px;padding:14px;font-size:0.95rem;font-weight:600;cursor:pointer">
+          ☁ Drive ile Bağlan
+          <div style="font-size:0.75rem;font-weight:400;opacity:.8;margin-top:2px">Kayıt Drive'a + bilgisayara kaydedilir</div>
+        </button>
+        <button onclick="document.getElementById('startup-modal').remove();"
+          style="background:#1e2336;color:#8892b0;border:1px solid #2a3050;border-radius:10px;padding:14px;font-size:0.95rem;cursor:pointer">
+          💾 Çevrimdışı Kullan
+          <div style="font-size:0.75rem;opacity:.7;margin-top:2px">JSON sadece bilgisayara indirilir</div>
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+};
+
+function initDriveAuth() {
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/drive',
+    prompt: 'select_account',
+    callback: async (resp) => {
+      if (resp.error) { showToast('Drive bağlantı hatası: ' + resp.error, 'error'); return; }
+      driveAccessToken = resp.access_token;
+      // Token 55 dakika sonra otomatik yenile
+      setTimeout(() => tokenClient.requestAccessToken({prompt: ''}), 55 * 60 * 1000); // sessiz yenileme
+      showToast('✅ Drive bağlandı', 'success');
+      driveFolderId = DRIVE_FOLDER_ID;
+      // Bekleyen kuyruğu gönder
+      setTimeout(flushPendingQueue, 500);
+    }
+  });
+  tokenClient.requestAccessToken({prompt: ''});
+}
+
+async function getOrCreateFolder() {
+  // Klasör var mı kontrol et
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+    { headers: { Authorization: 'Bearer ' + driveAccessToken } }
+  );
+  const data = await res.json();
+  if (data.files && data.files.length > 0) return data.files[0].id;
+
+  // Yoksa oluştur
+  const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + driveAccessToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: DRIVE_FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' })
+  });
+  const folder = await createRes.json();
+  return folder.id;
+}
+
+async function saveToDrive(jsonStr, fileName) {
+  if (!driveAccessToken) return false;
+  if (!driveFolderId) driveFolderId = DRIVE_FOLDER_ID;
+  try {
+    const metadata = { name: fileName, parents: [driveFolderId] };
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('file', new Blob([jsonStr], { type: 'application/json' }));
+    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + driveAccessToken },
+      body: form
+    });
+    return res.ok;
+  } catch(e) {
+    console.warn('saveToDrive hatası:', e.message);
+    return false; // Kuyruğa eklenecek
+  }
+}
+
+  // Planlanan tarih değişince sadece JSON'a kaydet, liste tarihi hep bugün
+  const planlananInput = document.getElementById('planlanan-tarih');
+  if (planlananInput) {
+    planlananInput.addEventListener('change', function() {
+      document.getElementById('liste-tarihi').value = new Date().toISOString().split('T')[0];
+    });
+  }
+
+
+
+/* ── PHONE ── */
+let phoneCount = 1;
+function addPhone(btn) {
+  phoneCount++;
+  const container = document.getElementById('phones-container');
+  const div = document.createElement('div');
+  div.className = 'phone-row';
+  div.dataset.index = phoneCount;
+  div.innerHTML = `
+    <div class="phone-wrap">
+      <input type="tel" class="tel-input" placeholder="+90 5XX XXX XX XX">
+      <button class="del-btn" onclick="removePhone(this)" title="Sil">✕</button>
+    </div>
+    <div class="companion-row">
+      <input type="text" class="companion-input" placeholder="Yanındaki kişi">
+    </div>`;
+  container.appendChild(div);
+}
+function removePhone(btn) {
+  btn.closest('.phone-row').remove();
+}
+
+/* ── PURPOSE ── */
+function selectPurpose(val, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('yatis-amaci').value = val;
+  const taniPanel = document.getElementById('tani-panel');
+  const egitimPanel = document.getElementById('egitim-panel');
+  const uygulamaPanel = document.getElementById('uygulama-panel');
+  const tukurukPanel = document.getElementById('tukuruk-panel');
+
+  if (taniPanel) taniPanel.classList.remove('visible');
+  if (egitimPanel) egitimPanel.style.display = 'none';
+  if (uygulamaPanel) uygulamaPanel.style.display = 'none';
+  if (tukurukPanel) tukurukPanel.style.display = 'none';
+
+  if (val === 'tani-tedavi' && taniPanel) {
+    taniPanel.classList.add('visible');
+  } else if (val === 'ilac-egitim' && egitimPanel) {
+    egitimPanel.style.display = 'block';
+  } else if (val === 'ilac-uygulama' && uygulamaPanel) {
+    uygulamaPanel.style.display = 'block';
+  } else if (val === 'tukuruk-biyopsi' && tukurukPanel) {
+    tukurukPanel.style.display = 'block';
+  }
+}
+
+/* ── CHECKBOX / RADIO TOGGLE ── */
+function toggleCheck(label, group) {
+  const input = label.querySelector('input');
+  const container = document.getElementById(group + '-group') || label.closest('[id$="-group"]');
+  const isSingle = container && container.dataset.single === 'true';
+
+  if (input.type === 'radio') {
+    // deselect same group
+    const allLabels = container ? container.querySelectorAll('.check-item') : [];
+    allLabels.forEach(l => { l.classList.remove('checked'); });
+    if (!label.classList.contains('checked')) {
+      label.classList.add('checked');
+      input.checked = true;
+    } else {
+      label.classList.remove('checked');
+      input.checked = false;
+    }
+  } else {
+    label.classList.toggle('checked');
+    input.checked = label.classList.contains('checked');
+  }
+  calcScore();
+  // D3 diğer tarama kutusu göster/gizle
+  const digerItem = document.querySelector('#tarama-group .check-item.checked .check-item-label');
+  const digerWrap = document.getElementById('diger-tarama-wrap');
+  if (digerWrap) {
+    const anyDiger = Array.from(document.querySelectorAll('#tarama-group .check-item.checked .check-item-label'))
+      .some(el => el.textContent.trim() === 'Diğer tarama');
+    digerWrap.style.display = anyDiger ? 'block' : 'none';
+    if (!anyDiger) document.getElementById('diger-tarama-text').value = '';
+  }
+}
+
+/* ── DEVİR ── */
+function toggleDevir(label) {
+  const input = label.querySelector('input');
+  label.classList.toggle('checked');
+  input.checked = label.classList.contains('checked');
+  const servisInput = document.getElementById('devir-servisi');
+  if (input.checked) {
+    label.style.background = 'rgba(247,167,79,0.18)';
+    label.style.borderColor = '#f7a74f';
+    servisInput.disabled = false;
+    servisInput.style.opacity = '1';
+    servisInput.style.pointerEvents = 'auto';
+    servisInput.focus();
+  } else {
+    label.style.background = 'rgba(247,167,79,0.06)';
+    label.style.borderColor = '#f7a74f';
+    servisInput.disabled = true;
+    servisInput.style.opacity = '0.5';
+    servisInput.style.pointerEvents = 'none';
+    servisInput.value = '';
+  }
+}
+
+/* ── ROMATOLOJİK TANI ── */
+function toggleRomatoTani(label) {
+  const cb = label.querySelector('input');
+  label.classList.toggle('checked');
+  cb.checked = label.classList.contains('checked');
+  const txt = document.getElementById('romato-tani-text');
+  if (cb.checked) {
+    txt.disabled = false; txt.style.opacity = '1'; txt.style.pointerEvents = 'auto'; txt.focus();
+    label.style.background = 'rgba(79,142,247,0.15)';
+  } else {
+    txt.disabled = true; txt.style.opacity = '0.4'; txt.style.pointerEvents = 'none'; txt.value = '';
+    label.style.background = '';
+  }
+}
+
+/* ── ORGAN DİĞER ── */
+function toggleOrganDiger(label) {
+  const cb = label.querySelector('input');
+  label.classList.toggle('checked');
+  cb.checked = label.classList.contains('checked');
+  const wrap = document.getElementById('organ-diger-wrap');
+  if (cb.checked) {
+    wrap.style.display = 'block';
+    label.classList.add('checked');
+    document.getElementById('organ-diger-text').focus();
+  } else {
+    wrap.style.display = 'none';
+    document.getElementById('organ-diger-text').value = '';
+  }
+  calcScore();
+}
+
+/* ── SCORING ── */
+function calcScore() {
+  let total = 0;
+
+  // A: max of checked
+  let aMax = 0;
+  document.querySelectorAll('#yasam-riski-group .check-item.checked input').forEach(i => {
+    aMax = Math.max(aMax, parseInt(i.value));
+  });
+  total += aMax;
+
+  // B: sum + multi-organ bonus
+  let organCount = 0, organSum = 0;
+  document.querySelectorAll('#organ-group .check-item.checked input').forEach(i => {
+    organCount++; organSum += parseInt(i.value);
+  });
+  total += organSum;
+  if (organCount >= 2) total += 2;
+
+  // C: single radio
+  const cEl = document.querySelector('#aktivite-group .check-item.checked input');
+  if (cEl) total += parseInt(cEl.value);
+
+  // D1
+  document.querySelectorAll('#tedavi-group .check-item.checked input').forEach(i => total += parseInt(i.value));
+  // D2
+  document.querySelectorAll('#etyo-group .check-item.checked input').forEach(i => total += parseInt(i.value));
+  // D3
+  document.querySelectorAll('#tarama-group .check-item.checked input').forEach(i => total += parseInt(i.value));
+
+  // E: komor1+2+3
+  ['komor1','komor2','komor3'].forEach(g => {
+    const el = document.querySelector(`#${g}-group .check-item.checked input`);
+    if (el) total += parseInt(el.value);
+  });
+
+  // F
+  const fEl = document.querySelector('#yas-group .check-item.checked input');
+  if (fEl) total += parseInt(fEl.value);
+
+  // G - çoklu seçim
+  document.querySelectorAll('#frailty-group .check-item.checked input').forEach(i => {
+    total += parseInt(i.value);
+  });
+
+  return total;
+}
+
+/* ── COLLECT DATA ── */
+function collectData() {
+  const phones = [], companions = [];
+  document.querySelectorAll('.phone-row').forEach(row => {
+    phones.push(row.querySelector('.tel-input').value.trim());
+    companions.push(row.querySelector('.companion-input').value.trim());
+  });
+
+  // Helper: label (Xp) format
+  function fmt(label, score) { return `${label} (${score}p)`; }
+
+  // A: max-scored checked item
+  let aMax = 0, aLabel = '';
+  document.querySelectorAll('#yasam-riski-group .check-item.checked').forEach(el => {
+    const v = parseInt(el.querySelector('input').value);
+    const l = el.querySelector('.check-item-label').textContent.trim();
+    if (v > aMax) { aMax = v; aLabel = l; }
+  });
+  const yasamRisk = aLabel ? fmt(aLabel, aMax) : '';
+
+  // B: all checked organs
+  const organs = [];
+  let organCount = 0;
+  document.querySelectorAll('#organ-group .check-item.checked').forEach(el => {
+    const v = parseInt(el.querySelector('input').value);
+    let l = el.querySelector('.check-item-label').textContent.trim();
+    if (l === 'Diğer') {
+      const digerText = document.getElementById('organ-diger-text').value.trim();
+      if (digerText) l = 'Diğer: ' + digerText;
+    }
+    organs.push(fmt(l, v));
+    organCount++;
+  });
+  if (organCount >= 2) organs.push('Multi-organ (+2p)');
+  const organTutulumu = organs.join(', ');
+
+  // C: single
+  const cEl = document.querySelector('#aktivite-group .check-item.checked');
+  const hastalikAktivitesi = cEl ? fmt(cEl.querySelector('.check-item-label').textContent.trim(), cEl.querySelector('input').value) : '';
+
+  // D1
+  const tedaviler = [];
+  document.querySelectorAll('#tedavi-group .check-item.checked').forEach(el => {
+    tedaviler.push(fmt(el.querySelector('.check-item-label').textContent.trim(), el.querySelector('input').value));
+  });
+
+  // D2
+  const etyoEl = document.querySelector('#etyo-group .check-item.checked');
+  const etyoloji = etyoEl ? fmt(etyoEl.querySelector('.check-item-label').textContent.trim(), etyoEl.querySelector('input').value) : '';
+
+  // D3
+  const tarama = [];
+  document.querySelectorAll('#tarama-group .check-item.checked').forEach(el => {
+    const labelText = el.querySelector('.check-item-label').textContent.trim();
+    if (labelText === 'Diğer tarama') {
+      const digerText = document.getElementById('diger-tarama-text').value.trim();
+      tarama.push(fmt(digerText ? 'Diğer: ' + digerText : 'Diğer tarama', el.querySelector('input').value));
+    } else {
+      tarama.push(fmt(labelText, el.querySelector('input').value));
+    }
+  });
+
+  // E
+  const komor = [];
+  ['komor1','komor2','komor3'].forEach(g => {
+    const el = document.querySelector(`#${g}-group .check-item.checked`);
+    if (el) komor.push(fmt(el.querySelector('.check-item-label').textContent.trim(), el.querySelector('input').value));
+  });
+
+  // F
+  const fEl = document.querySelector('#yas-group .check-item.checked');
+  const yasGrubu = fEl ? fmt(fEl.querySelector('.check-item-label').textContent.trim(), fEl.querySelector('input').value) : '';
+
+  // G - çoklu seçim
+  const frailtyItems = [];
+  document.querySelectorAll('#frailty-group .check-item.checked').forEach(el => {
+    frailtyItems.push(fmt(el.querySelector('.check-item-label').textContent.trim(), el.querySelector('input').value));
+  });
+  const frailty = frailtyItems.join(', ');
+
+  const yatisAmaci = document.getElementById('yatis-amaci').value;
+  const puan = yatisAmaci === 'tani-tedavi' ? calcScore() : '';
+
+  return {
+    hastaAdi: document.getElementById('hasta-adi').value.trim(),
+    romatoTani: document.getElementById('romato-tani-cb').checked ? (document.getElementById('romato-tani-text').value.trim() || 'Var') : '',
+    kisaHikaye: document.getElementById('kisa-hikaye').value.trim(),
+    kullandigiIlaclar: document.getElementById('kullandigi-ilaclar').value.trim(),
+    tcKimlik: document.getElementById('tc-kimlik').value.trim(),
+    hastaYasi: document.getElementById('hasta-yasi').value,
+    cinsiyet: document.getElementById('cinsiyet').value,
+    telefon: phones.join(' | '),
+    yanindaki: companions.join(' | '),
+    listeTarihi: document.getElementById('liste-tarihi').value,
+    doktor: document.getElementById('doktor-harfleri').value.trim().toUpperCase(),
+    yatisAmaci: yatisAmaci === 'tani-tedavi' ? (document.getElementById('devir-checkbox').checked ? 'H-Devir' : 'Tanı/Tedavi') : yatisAmaci === 'ilac-egitim' ? 'İlaç Eğitimi' : yatisAmaci === 'ilac-uygulama' ? 'İlaç Uygulaması' : yatisAmaci === 'tukuruk-biyopsi' ? 'Tükürük Bezi Biyopsisi' : '',
+    yasamRisk,
+    organTutulumu,
+    hastalikAktivitesi,
+    tedaviIhtiyaci: tedaviler.join(', '),
+    etyoloji,
+    tarama: tarama.join(', '),
+    komorbidite: komor.join(', '),
+    yasGrubu,
+    frailty,
+    toplamPuan: puan,
+    notlar: document.getElementById('notlar').value.trim(),
+    planlananTarih: document.getElementById('planlanan-tarih').value || '',
+    devirServisi: document.getElementById('devir-servisi').value.trim(),
+    uygulamaIlacAdi: yatisAmaci === 'ilac-uygulama' ? document.getElementById('uygulama-ilac-adi').value.trim() : '',
+    uygulamaDozu: yatisAmaci === 'ilac-uygulama' ? document.getElementById('uygulama-ilac-dozu').value.trim() : '',
+    uygulamaForm: yatisAmaci === 'ilac-uygulama' ? document.getElementById('uygulama-form-cb').checked : false,
+    uygulamaRapor: yatisAmaci === 'ilac-uygulama' ? document.getElementById('uygulama-rapor-cb').checked : false,
+    egitimIlacAdi: yatisAmaci === 'ilac-egitim' ? document.getElementById('egitim-ilac-adi').value.trim() : ''
+  };
+}
+
+/* ── VALIDATE ── */
+function validate(d) {
+  if (!d.hastaAdi) return 'Hasta adı soyadı giriniz.';
+  if (!d.tcKimlik || d.tcKimlik.length !== 11) return 'TC Kimlik No 11 haneli olmalı.';
+  if (!d.hastaYasi) return 'Hasta yaşı giriniz.';
+  if (!d.cinsiyet) return 'Cinsiyet seçiniz.';
+  if (!d.telefon) return 'Telefon numarası giriniz.';
+  if (!d.yatisAmaci) return 'Yatış amacı seçiniz.';
+  if (!d.doktor) return 'Doktor baş harflerini giriniz.';
+  return null;
+}
+
+/* ── SHEET HEADERS ── */
+const HEADERS = [
+  'Hasta Adı Soyadı','TC Kimlik No','Yaş','Cinsiyet','Telefon','Yanındaki Kişi',
+  'Listeye Alınış Tarihi','Doktor','Yatış Amacı',
+  'A-Yaşamsal Risk','B-Organ Tutulumu','C-Hastalık Aktivitesi',
+  'D1-Tedavi','D2-Etyoloji','D3-Tarama','E-Komorbidite','F-Yaş Grubu','G-Frailty/Sosyal',
+  'TOPLAM PUAN','Notlar'
+];
+
+function dataToRow(d) {
+  return [
+    d.hastaAdi, d.tcKimlik, d.hastaYasi, d.cinsiyet, d.telefon, d.yanindaki,
+    d.listeTarihi, d.doktor, d.yatisAmaci,
+    d.yasamRisk, d.organTutulumu, d.hastalikAktivitesi,
+    d.tedaviIhtiyaci, d.etyoloji, d.tarama, d.komorbidite, d.yasGrubu, d.frailty,
+    d.toplamPuan, d.notlar
+  ];
+}
+
+/* ── SUBMIT ── */
+async function submitForm() {
+  const d = collectData();
+  const err = validate(d);
+  if (err) { showToast('⚠ ' + err, 'error'); return; }
+
+  try {
+    const json = JSON.stringify(d, null, 2);
+    const bugun = new Date().toISOString().slice(0,19).replace(/:/g,'-');
+    const fileName = 'hasta_' + d.hastaAdi.replace(/\s+/g,'_') + '_' + bugun + '.json';
+
+    // Drive'a kaydet
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Kaydediliyor...';
+    const driveOk = await saveToDrive(json, fileName);
+
+    // Lokal yedek indir
+    const blob = new Blob([json], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    btn.disabled = false;
+    btn.textContent = '📋 Kaydet';
+
+    if (driveOk) {
+      showToast('✅ ' + d.hastaAdi + " Drive'a kaydedildi!", 'success', 4000);
+    } else {
+      // Drive'a gidemediyse kuyruğa ekle — internet gelince otomatik yükle
+      addToPendingQueue(json, fileName, d.hastaAdi);
+      showToast('⚠ Drive bağlı değil — ' + d.hastaAdi + ' kuyruğa eklendi, bağlanınca yüklenecek', 'error', 5000);
+    }
+    resetForm();
+  } catch(e) {
+    console.error(e);
+    showToast('❌ Hata: ' + e.message, 'error', 5000);
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').textContent = '📋 Kaydet';
+  }
+}
+
+function reconnectDrive() {
+  localStorage.removeItem('rheum_account');
+  initDriveAuth();
+}
+
+/* ── PENDING QUEUE ── */
+let pendingQueue = JSON.parse(localStorage.getItem('rheum_pending_queue') || '[]');
+
+function addToPendingQueue(json, fileName, hastaAdi) {
+  pendingQueue.push({ json, fileName, hastaAdi, addedAt: new Date().toISOString() });
+  try { localStorage.setItem('rheum_pending_queue', JSON.stringify(pendingQueue)); } catch(e) {}
+  updatePendingBadge();
+}
+
+function updatePendingBadge() {
+  const badge = document.getElementById('pending-badge');
+  if (badge) {
+    badge.style.display = pendingQueue.length > 0 ? 'inline-block' : 'none';
+    badge.textContent = pendingQueue.length;
+  }
+}
+
+async function flushPendingQueue() {
+  if (pendingQueue.length === 0) return;
+  if (!driveAccessToken) return;
+  const toUpload = [...pendingQueue];
+  let successCount = 0;
+  for (const item of toUpload) {
+    const ok = await saveToDrive(item.json, item.fileName);
+    if (ok) {
+      pendingQueue = pendingQueue.filter(p => p.fileName !== item.fileName);
+      successCount++;
+    }
+  }
+  try { localStorage.setItem('rheum_pending_queue', JSON.stringify(pendingQueue)); } catch(e) {}
+  updatePendingBadge();
+  if (successCount > 0) {
+    showToast('✅ ' + successCount + " bekleyen hasta Drive'a yüklendi", 'success', 4000);
+  }
+}
+
+// Drive bağlanınca kuyruğu boşalt
+window.addEventListener('online', () => {
+  setTimeout(flushPendingQueue, 2000);
+});
+
+/* ── RESET ── */
+function resetForm() {
+  document.getElementById('hasta-adi').value = '';
+  document.getElementById('tc-kimlik').value = '';
+  document.getElementById('hasta-yasi').value = '';
+  document.getElementById('cinsiyet').value = '';
+  document.getElementById('doktor-harfleri').value = '';
+  document.getElementById('yatis-amaci').value = '';
+  const devirItem = document.getElementById('devir-item');
+  const devirCb = document.getElementById('devir-checkbox');
+  const devirServis = document.getElementById('devir-servisi');
+  if (devirItem && devirCb) {
+    devirItem.classList.remove('checked');
+    devirCb.checked = false;
+    devirItem.style.background = 'rgba(247,167,79,0.06)';
+    if (devirServis) { devirServis.value = ''; devirServis.disabled = true; devirServis.style.opacity = '0.5'; }
+  }
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tani-panel').classList.remove('visible');
+  const egitimPanel = document.getElementById('egitim-panel'); if (egitimPanel) egitimPanel.style.display = 'none';
+  const uygulamaPanel = document.getElementById('uygulama-panel'); if (uygulamaPanel) uygulamaPanel.style.display = 'none';
+  const tukurukPanel = document.getElementById('tukuruk-panel'); if (tukurukPanel) tukurukPanel.style.display = 'none';
+  
+  const egitimIlac = document.getElementById('egitim-ilac-adi'); if (egitimIlac) egitimIlac.value = '';
+  const uygIlac = document.getElementById('uygulama-ilac-adi'); if (uygIlac) uygIlac.value = '';
+  const uygDoz = document.getElementById('uygulama-ilac-dozu'); if (uygDoz) uygDoz.value = '';
+  const uygFormCb = document.getElementById('uygulama-form-cb'); if (uygFormCb) { uygFormCb.checked = false; document.getElementById('uygulama-form-item').classList.remove('checked'); }
+  const uygRaporCb = document.getElementById('uygulama-rapor-cb'); if (uygRaporCb) { uygRaporCb.checked = false; document.getElementById('uygulama-rapor-item').classList.remove('checked'); }
+
+  document.querySelectorAll('.check-item').forEach(l => {
+    l.classList.remove('checked');
+    const inp = l.querySelector('input');
+    if (inp) inp.checked = false;
+  });
+  document.getElementById('notlar').value = '';
+  document.getElementById('kisa-hikaye').value = '';
+  document.getElementById('kullandigi-ilaclar').value = '';
+  const romatoCb = document.getElementById('romato-tani-cb');
+  const romatolItem = document.getElementById('romato-tani-item');
+  const romatolText = document.getElementById('romato-tani-text');
+  if (romatoCb) { romatoCb.checked = false; romatolItem.classList.remove('checked'); romatolItem.style.background=''; romatolText.value=''; romatolText.disabled=true; romatolText.style.opacity='0.4'; romatolText.style.pointerEvents='none'; }
+  const organDigerCb = document.getElementById('organ-diger-cb');
+  const organDigerWrap = document.getElementById('organ-diger-wrap');
+  const organDigerText = document.getElementById('organ-diger-text');
+  if (organDigerCb) { organDigerCb.checked = false; document.getElementById('organ-diger-item').classList.remove('checked'); organDigerWrap.style.display='none'; organDigerText.value=''; }
+  const digerKutu = document.getElementById('diger-tarama-kutu');
+  const digerText = document.getElementById('diger-tarama-text');
+  const digerWrap = document.getElementById('diger-tarama-wrap');
+  if (digerKutu) digerKutu.style.display = 'none';
+  if (digerText) digerText.value = '';
+  if (digerWrap) digerWrap.style.display = 'none';
+  document.getElementById('planlanan-tarih').value = '';
+  // reset phones
+  document.getElementById('phones-container').innerHTML = `
+    <div class="phone-row" data-index="0">
+      <div class="phone-wrap">
+        <input type="tel" class="tel-input" placeholder="+90 5XX XXX XX XX">
+        <button class="phone-add-btn" onclick="addPhone(this)" title="Kişi ekle">＋</button>
+      </div>
+      <div class="companion-row">
+        <input type="text" class="companion-input" placeholder="Yanındaki kişi (ör. Eşi, Oğlu)">
+      </div>
+    </div>`;
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('liste-tarihi').value = today;
+}
+
+/* ── TOAST ── */
+function showToast(msg, type='', duration=3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._to);
+  t._to = setTimeout(() => t.className = '', duration);
+}
+</script>
+
+<!-- ═══ KURULUM TALİMATLARI (sayfanın altında gizli) ═══
+=====================================================
+KURULUM GEREKSİNİMLERİ
+
+1. Google Cloud Console → yeni proje oluştur
+2. APIs & Services → Google Sheets API'yi aktif et
+3. OAuth 2.0 Client ID oluştur (Web Application tipi)
+   Authorized JavaScript Origins: http://localhost veya https://siteniz.com
+4. Client ID'yi yukarıdaki CLIENT_ID değişkenine yaz
+
+5. Google Drive'da hastalistesi.xlsx dosyasını aç
+   URL'den dosya ID'sini kopyala (docs.google.com/spreadsheets/d/XXXXXXX/edit)
+   SPREADSHEET_ID değişkenine yaz
+
+6. Dosyayı bir web sunucusunda barındır (file:// çalışmaz, CORS kısıtı var)
+   Basit test için: python -m http.server 8080
+   Ardından: http://localhost:8080/hastalistesi_form.html
+
+NOT: Puan sütunu Excelde görünür, ama form arayüzünde gösterilmez.
+====================================================== -->
+
+</body>
+</html>
